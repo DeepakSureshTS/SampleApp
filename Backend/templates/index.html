@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MongoDB Query Executor</title>
+</head>
+<body>
+    <h1>MongoDB Query Executor</h1>
+    <form action="/execute_query" method="post">
+        <textarea name="query" rows="5" cols="50" placeholder="Enter your MongoDB query here"></textarea>
+        <br>
+        <button type="submit">Execute</button>
+    </form>
+    {% if result %}
+        <h2>Query Result:</h2>
+        <pre>{{ result }}</pre>
+    {% endif %}
+</body>
+</html>
