@@ -1,0 +1,17 @@
+<!-- query.html -->
+<html>
+<head>
+    <title>MongoDB Query</title>
+</head>
+<body>
+    <h1>Connected to MongoDB</h1>
+    <p>Database: {{ db.name }}</p>
+    <form action="/execute_query" method="post">
+        <input type="hidden" name="mongo_uri" value="{{ db.client.address }}">
+        <label for="query">Enter MongoDB Query:</label>
+        <textarea name="query" rows="5" cols="50" placeholder="Enter your MongoDB query here"></textarea>
+        <br>
+        <button type="submit">Execute</button>
+    </form>
+</body>
+</html>

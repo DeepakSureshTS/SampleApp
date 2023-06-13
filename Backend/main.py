@@ -1,18 +1,21 @@
 import ast
+# from json import dumps
+import json
 from fastapi import FastAPI, Form, Request
 from fastapi.templating import Jinja2Templates
 from pymongo import MongoClient
 import uvicorn
+from pymongo.errors import ConnectionFailure, OperationFailure
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-client = MongoClient("mongodb://localhost:27017")  # Replace with your MongoDB connection string
-db = client["testdb"]  # Replace with your database name
-collection = db["collection_name"]
+# client = MongoClient("mongodb://localhost:27017")  # Replace with your MongoDB connection string
+# db = client["testdb"]  # Replace with your database name
+# collection = db["collection_name"]
 
-@app.get("/")
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+# @app.get("/")
+# def home(request: Request):
+#     return templates.TemplateResponse("index.html", {"request": request})
 
 
 # @app.post("/execute_query")
@@ -59,19 +62,58 @@ def home(request: Request):
 #     return result
 
 
-@app.post("/execute_query")
-async def execute_query(request: Request,query: str = Form(...)):
-   result = execute_mongo_query(query)
-   return templates.TemplateResponse("index.html", {"request": request, "result": result})
+# @app.post("/execute_query")
+# async def execute_query(request: Request,query: str = Form(...)):
+#    result = execute_mongo_query(query)
+#    return templates.TemplateResponse("index.html", {"request": request, "result": result})
 
-def execute_mongo_query(query):
+# def execute_mongo_query(query):
+#     try:
+#         result = db.command(query)
+#         return result
+#     except Exception as e:
+#         return f"Error: {str(e)}"
+
+@app.get("/")
+def home(request: Request):
+    return templates.TemplateResponse("mongo.html", {"request": request})
+
+@app.post("/connect_db")
+async def connect_db(request: Request, mongo_uri: str = Form(...)):
+
     try:
-        result = db.aggregate(
-            [{"$find":"ramesh"}]
-        )
-        return result
+        # mongo = request.form["mongo_uri"]
+        # mongo_db=mongo.json()
+        conn = MongoClient("mongodb://localhost:27017")
+        # conn = MongoClient(mongo_db)
+        db = conn.testdb
+
+        # Check the connection
+        conn.admin.command('ping')
+
+        # Check if the database exists
+        if db.list_collection_names():
+            print("Database Connected...")
+        else:
+            print("Database 'SCMXpert' does not exist.")
+
+    except ConnectionFailure as e:
+        print("Failed Connection...", repr(e))
+    except OperationFailure as e:
+        print("Failed to access database 'SCMXpert':", repr(e))
     except Exception as e:
-        return f"Error: {str(e)}"
+        print(repr(e))
+
+@app.post("/execute_query")
+async def execute_query(request: Request, mongo_uri: str = Form(...), query: str = Form(...)):
+    try:
+        client = MongoClient(mongo_uri)
+        db = client.get_database()
+        result = list(db.command(query))
+        return templates.TemplateResponse("result.html", {"request": request, "result": result})
+    except Exception as e:
+        return templates.TemplateResponse("query.html", {"request": request, "error": str(e)})
+
 
 
 if __name__ == "__main__":
