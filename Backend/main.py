@@ -1,7 +1,7 @@
 import ast
 # from json import dumps
 import json
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Query, Request
 from fastapi.templating import Jinja2Templates
 from pymongo import MongoClient
 import uvicorn
@@ -79,40 +79,63 @@ def home(request: Request):
     return templates.TemplateResponse("mongo.html", {"request": request})
 
 @app.post("/connect_db")
-async def connect_db(request: Request, mongo_uri: str = Form(...)):
+async def connect_db(request: Request, uri: str = Form(...)):
 
     try:
         # mongo = request.form["mongo_uri"]
         # mongo_db=mongo.json()
-        conn = MongoClient("mongodb://localhost:27017")
-        # conn = MongoClient(mongo_db)
-        db = conn.testdb
+        # conn = MongoClient(Query)
+        # uri = request.form['uri']
+        conn = MongoClient(uri)
+        # db = conn.akshy
 
         # Check the connection
         conn.admin.command('ping')
+        # return "Connection successful"
+        databases = conn.list_database_names()
 
-        # Check if the database exists
-        if db.list_collection_names():
-            print("Database Connected...")
-        else:
-            print("Database 'SCMXpert' does not exist.")
+        # Get the collections for each database
+        collections = {}
+        for database in databases:
+            collections[database] = conn[database].list_collection_names()
+
+        return templates.TemplateResponse("result.html", {"request": request, "databases": databases, "collections": collections})
 
     except ConnectionFailure as e:
-        print("Failed Connection...", repr(e))
-    except OperationFailure as e:
-        print("Failed to access database 'SCMXpert':", repr(e))
+        return f"Failed to connect to MongoDB: {repr(e)}"
     except Exception as e:
-        print(repr(e))
+        return f"An error occurred: {repr(e)}"
+        # # Check if the database exists
+        # if db.list_collection_names():
+        #     print("Database Connected...")
+        # else:
+        #     print("Database does not exist.")
+
+
 
 @app.post("/execute_query")
-async def execute_query(request: Request, mongo_uri: str = Form(...), query: str = Form(...)):
-    try:
-        client = MongoClient(mongo_uri)
-        db = client.get_database()
-        result = list(db.command(query))
-        return templates.TemplateResponse("result.html", {"request": request, "result": result})
-    except Exception as e:
-        return templates.TemplateResponse("query.html", {"request": request, "error": str(e)})
+async def execute_query(request: Request, collection: str = Form(...), query: str = Form(...),databases:  str = Form(...), collections: str = Form(...)):
+    # Perform operations with the query and collection
+    # You can execute the query against the specified collection here
+
+    # Example: Log the query and collection
+    print("Executing query:", query)
+    print("Collection:", collection)
+
+    # You can perform further actions with the query and selected collection,
+    # such as executing the query against the database or returning the results.
+
+    return templates.TemplateResponse("result.html", {"request": request, "databases": databases, "collections": collections})
+
+# @app.post("/execute_query")
+# async def execute_query(request: Request, mongo_uri: str = Form(...), query: str = Form(...)):
+#     try:
+#         client = MongoClient(mongo_uri)
+#         db = client.get_database()
+#         result = list(db.command(query))
+#         return templates.TemplateResponse("result.html", {"request": request, "result": result})
+#     except Exception as e:
+#         return templates.TemplateResponse("query.html", {"request": request, "error": str(e)})
 
 
 

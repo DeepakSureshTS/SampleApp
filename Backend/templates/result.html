@@ -1,4 +1,4 @@
-<!-- result.html -->
+<!-- result.html
 <html>
 <head>
     <title>Query Result</title>
@@ -11,4 +11,175 @@
     {% endfor %}
     </ul>
 </body>
+</html> -->
+<!-- <html>
+  <body>
+    <h3>Databases:</h3>
+    <ul>
+      {% for database in databases %}
+        <li>{{ database }}</li>
+      {% endfor %}
+    </ul>
+    <h3>Collections:</h3>
+    {% for database, collection_list in collections.items() %}
+      <h4>Database: {{ database }}</h4>
+      <ul>
+        {% for collection in collection_list %}
+          <li>{{ collection }}</li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </body>
+</html> -->
+<!-- <!DOCTYPE html>
+<html>
+  <body>
+    <h3>Select a Database:</h3>
+    <select id="database" onchange="getCollections()">
+      {% for database in databases %}
+        <option value="{{ database }}">{{ database }}</option>
+      {% endfor %}
+    </select>
+
+    <h3>Select a Collection:</h3>
+    <select id="collection"></select>
+
+    <script>
+      function getCollections() {
+        const selectedDatabase = document.getElementById('database').value;
+        const collections = {{ collections | tojson }};
+        const collectionSelect = document.getElementById('collection');
+        collectionSelect.innerHTML = '';
+
+        const databaseCollections = collections[selectedDatabase];
+        databaseCollections.forEach(function (collection) {
+          const option = document.createElement('option');
+          option.value = collection;
+          option.text = collection;
+          collectionSelect.appendChild(option);
+        });
+      }
+    </script>
+  </body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html>
+  <body>
+    <h3>Databases:</h3>
+    <form id="databaseForm">
+      <select id="databaseSelect" onchange="updateCollections()">
+        {% for database in databases %}
+          <option value="{{ database }}">{{ database }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <h3>Collections:</h3>
+    <ul id="collectionsList">
+      {% for collection in collections[databases] %}
+        <li>{{ collection }}</li>
+      {% endfor %}
+    </ul>
+
+    <script>
+      function updateCollections() {
+        var databaseSelect = document.getElementById("databaseSelect");
+        var collectionsList = document.getElementById("collectionsList");
+        var selectedDatabase = databaseSelect.value;
+        
+        collectionsList.innerHTML = "";
+        for (var i = 0; i < collections[selectedDatabase].length; i++) {
+          var collection = collections[selectedDatabase][i];
+          var listItem = document.createElement("li");
+          listItem.innerText = collection;
+          collectionsList.appendChild(listItem);
+        }
+      }
+    </script>
+  </body>
+</html> -->
+<!DOCTYPE html>
+<html>
+  <body>
+    <h3>Select a Database:</h3>
+    <form id="databaseForm">
+      <select id="databaseSelect" onchange="updateCollections()">
+        {% for database in databases %}
+          <option value="{{ database }}">{{ database }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <h3>Select a Collection:</h3>
+    <form id="collectionForm">
+      <select id="collectionSelect">
+      </select>
+    </form>
+
+    <h3>Enter a Query:</h3>
+    <form id="queryForm">
+      <input type="text" id="queryInput">
+      <button type="button" onclick="executeQuery()">Execute</button>
+    </form>
+
+    <script>
+      var collections = JSON.parse('{{ collections|tojson }}');
+
+      function updateCollections() {
+        var databaseSelect = document.getElementById("databaseSelect");
+        var selectedDatabase = databaseSelect.options[databaseSelect.selectedIndex].value;
+
+        var collectionForm = document.getElementById("collectionForm");
+        var collectionSelect = document.getElementById("collectionSelect");
+
+        // Clear existing options
+        collectionSelect.innerHTML = "";
+
+        // Get collections for selected database
+        var collectionList = collections[selectedDatabase];
+
+        // Populate collection options
+        collectionList.forEach(function(collection) {
+          var option = document.createElement("option");
+          option.value = collection;
+          option.text = collection;
+          collectionSelect.appendChild(option);
+        });
+        currentCollection = null;
+      }
+
+      function executeQuery() {
+        var collectionSelect = document.getElementById("collectionSelect");
+        var selectedCollection = collectionSelect.options[collectionSelect.selectedIndex].value;
+
+        var queryInput = document.getElementById("queryInput");
+        var query = queryInput.value.trim();
+
+        if (!selectedCollection) {
+          alert("Please select a collection.");
+          return;
+        }
+
+        if (!query) {
+          alert("Please enter a query.");
+          return;
+        }
+
+        // Execute the query
+        console.log("Executing query:", query);
+        console.log("Collection:", selectedCollection);
+
+        // You can perform further actions with the query and selected collection
+        // such as sending them to a server endpoint for processing or displaying the results.
+      }
+    </script>
+
+<h3>Query Results:</h3>
+<ul>
+  {% for document in result %}
+    <li>{{ document }}</li>
+  {% endfor %}
+</ul>
+  </body>
 </html>
